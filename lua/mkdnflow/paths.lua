@@ -227,7 +227,7 @@ enter_internal_path = function(path)
     }
     vim.ui.input(input_opts, function(response)
         if response ~= nil and response ~= path .. sep then
-            internal_open(response)
+            vim_open(response)
             vim.api.nvim_command('normal! :')
         end
     end)
