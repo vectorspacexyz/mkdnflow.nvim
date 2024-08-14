@@ -99,7 +99,7 @@ local resolve_notebook_path = function(path, sub_home_var)
             derived_path = string.gsub(derived_path, '^~\\', vim.loop.os_homedir() .. '\\')
         end
     end
-    -- Decide what to pass to internal_open function
+    -- Decide what to pass to vim_open function
     if derived_path:match('^~/') or derived_path:match('^/') or derived_path:match('^%u:\\') then
         derived_path = sub_home_var and string.gsub(derived_path, '^~/', '$HOME/') or derived_path
     elseif perspective.priority == 'root' and root_dir then
