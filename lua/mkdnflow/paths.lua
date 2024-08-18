@@ -508,16 +508,13 @@ M.moveSource = function()
         vim.api.nvim_set_option('cmdheight', rows_needed)
         vim.ui.input({ prompt = prompt }, function(response)
             if response == 'y' then
-                if this_os:match('Windows') then
-                    os.execute('move "' .. derived_source .. '" "' .. derived_goal .. '"')
-                else
-                    os.execute(
-                        'mv '
-                            .. utils.escapeChars(derived_source)
-                            .. ' '
-                            .. utils.escapeChars(derived_goal)
-                    )
-                end
+                local command = string.format(
+                    '%s %s %s',
+                    this_os:match('Windows') and 'move' or 'mv',
+                    vim.fn.shellescape(derived_source),
+                    vim.fn.shellescape(derived_goal)
+                )
+                os.execute(command)
                 -- Change the link content
                 vim.api.nvim_buf_set_text(
                     0,
@@ -586,7 +583,12 @@ M.moveSource = function()
                 if goal_exists then -- If the goal location already exists, abort
                     vim.api.nvim_command('normal! :')
                     vim.api.nvim_echo(
-                        { { "⬇️  '" .. location .. "' already exists! Aborting.", 'WarningMsg' } },
+                        {
+                            {
+                                "⬇️  '" .. location .. "' already exists! Aborting.",
+                                'WarningMsg',
+                            },
+                        },
                         true,
                         {}
                     )
@@ -635,16 +637,12 @@ M.moveSource = function()
                 else -- Otherwise, the file we're trying to move must not exist
                     -- Clear the prompt & send a warning
                     vim.api.nvim_command('normal! :')
-                    vim.api.nvim_echo(
+                    vim.api.nvim_echo({
                         {
-                            {
-                                '⬇️  ' .. derived_source .. " doesn't seem to exist! Aborting.",
-                                'WarningMsg',
-                            },
+                            '⬇️  ' .. derived_source .. " doesn't seem to exist! Aborting.",
+                            'WarningMsg',
                         },
-                        true,
-                        {}
-                    )
+                    }, true, {})
                 end
             end
         end)
