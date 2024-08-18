@@ -457,7 +457,7 @@ local truncate_path = function(oldpath, newpath)
             char = char + 1
         end
     end
-    if char > last_slash then
+    if last_slash and char > last_slash then
         difference = string.sub(newpath, last_slash)
     else
         difference = string.sub(newpath, char)
