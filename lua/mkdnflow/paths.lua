@@ -379,6 +379,10 @@ M.pathType = function(path, anchor)
         return nil
     elseif string.find(path, '^file:') then
         return 'file'
+    -- only image files are placed in img/ paths
+    elseif string.find(path, '^img/') then
+    -- elseif string.find(path, '.(png)$') then
+        return 'image'
     elseif links.hasUrl(path) then
         return 'url'
     elseif string.find(path, '^@') then
@@ -424,6 +428,8 @@ M.handlePath = function(path, anchor)
         system_open(path .. (anchor or ''), 'url')
     elseif path_type == 'file' then
         handle_external_file(path)
+    elseif path_type == 'image' then
+        system_open(path)
     elseif path_type == 'anchor' then
         -- Send cursor to matching heading
         if not cursor.toId(anchor, 1) then
