@@ -71,10 +71,10 @@ local exists = function(path, unit_type)
         -- Use the shell to determine if the path exists
         handle = io.popen(
             'if [ -'
-                .. unit_type
-                .. ' '
-                .. vim.fn.shellescape(path)
-                .. ' ]; then echo true; else echo false; fi'
+            .. unit_type
+            .. ' '
+            .. vim.fn.shellescape(path)
+            .. ' ]; then echo true; else echo false; fi'
         )
     end
     local output = handle:read('*l')
@@ -105,7 +105,7 @@ local resolve_notebook_path = function(path, sub_home_var)
     elseif perspective.priority == 'root' and root_dir then
         -- Paste root directory and the directory in link
         derived_path = root_dir .. sep .. derived_path
-    -- See if the path exists
+        -- See if the path exists
     elseif
         perspective.priority == 'first'
         or (perspective.priority == 'root' and perspective.fallback == 'first')
@@ -240,11 +240,14 @@ Returns nothing
 local system_open = function(path, type)
     local shell_open = function(path_)
         if this_os == 'Linux' then
-            vim.api.nvim_command('silent !xdg-open ' .. vim.fn.shellescape(path_, true))
+            -- Add & to run in background and redirect output to prevent blocking
+            vim.fn.jobstart({ 'xdg-open', path_ }, { detach = true })
         elseif this_os == 'Darwin' then
-            vim.api.nvim_command('silent !open ' .. vim.fn.shellescape(path_, true) .. ' &')
+            -- The & is already present, but use jobstart for better async handling
+            vim.fn.jobstart({ 'open', path_ }, { detach = true })
         elseif this_os:match('Windows') then
-            os.execute('cmd.exe /c "start "" "' .. path_ .. '"')
+            -- Use start command with /B flag for background execution
+            vim.fn.jobstart({ 'cmd.exe', '/c', 'start', '/B', '', path_ }, { detach = true })
         else
             if not silent then
                 vim.api.nvim_echo({ { this_os_err, 'ErrorMsg' } }, true, {})
@@ -342,7 +345,7 @@ M.updateDirs = function()
                             vim.api.nvim_echo({
                                 {
                                     '⬇️  No notebook found. Fallback perspective: '
-                                        .. perspective.fallback,
+                                    .. perspective.fallback,
                                     'WarningMsg',
                                 },
                             }, true, {})
@@ -379,9 +382,9 @@ M.pathType = function(path, anchor)
         return nil
     elseif string.find(path, '^file:') then
         return 'file'
-    -- only image files are placed in img/ paths
+        -- only image files are placed in img/ paths
     elseif string.find(path, '^img/') then
-    -- elseif string.find(path, '.(png)$') then
+        -- elseif string.find(path, '.(png)$') then
         return 'image'
     elseif links.hasUrl(path) then
         return 'url'
@@ -599,7 +602,7 @@ M.moveSource = function()
                         {}
                     )
                 elseif source_exists then -- If the source location exists, proceed
-                    if dir then -- If there's a directory in the goal location, ...
+                    if dir then           -- If there's a directory in the goal location, ...
                         local to_dir_exists = exists(dir, 'd')
                         if not to_dir_exists then
                             if create_dirs then
